@@ -37,8 +37,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   }
 
   // Masquer le mot de passe dans les réponses JSON
-  public toJSON() {
-    const values = { ...this.get() };
+  public toJSON(): Omit<UserAttributes, 'password'> {
+    const values = Object.assign({}, this.get()) as any;
     delete values.password;
     return values;
   }
