@@ -65,7 +65,7 @@ const startServer = async () => {
 
     // Synchroniser les modèles (en développement seulement)
     if (process.env.NODE_ENV === 'development') {
-      await syncDatabase(false); // false = ne pas supprimer les tables existantes
+      await syncDatabase(true); // Force la création des tables
     }
 
     // Démarrer le serveur
