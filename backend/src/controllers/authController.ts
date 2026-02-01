@@ -5,17 +5,16 @@ import { User, UserRole } from '../models/User';
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, nom, prenom, role } = req.body;
 
-    // Vérifier si l'utilisateur existe déjà
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+      res.status(400).json({ message: 'Cet email est déjà utilisé' });
+      return;
     }
 
-    // Créer l'utilisateur
     const user = await User.create({
       email,
       password,
@@ -24,7 +23,6 @@ export const register = async (req: Request, res: Response) => {
       role: role || UserRole.EXPERT,
     });
 
-    // Générer le token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
@@ -42,23 +40,22 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
-    // Vérifier si l'utilisateur existe
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+      res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+      return;
     }
 
-    // Vérifier le mot de passe
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+      res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+      return;
     }
 
-    // Générer le token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
@@ -76,13 +73,14 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
     const user = await User.findByPk(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      res.status(404).json({ message: 'Utilisateur non trouvé' });
+      return;
     }
 
     res.json({ user: user.toJSON() });

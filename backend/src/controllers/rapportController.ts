@@ -1,15 +1,15 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import { Rapport, Bureau, Vehicule, User } from '../models';
+import { Op } from 'sequelize';
 
-export const getAllRapports = async (req: AuthRequest, res: Response) => {
+export const getAllRapports = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { statut, numeroSinistre, page = 1, limit = 10 } = req.query;
+    const { statut, numeroSinistre, page = '1', limit = '10' } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
     const where: any = {};
     
-    // Filtrer par utilisateur si pas admin
     if (req.user?.role !== 'admin') {
       where.userId = req.userId;
     }
@@ -44,7 +44,7 @@ export const getAllRapports = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getRapportById = async (req: AuthRequest, res: Response) => {
+export const getRapportById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -57,12 +57,13 @@ export const getRapportById = async (req: AuthRequest, res: Response) => {
     });
 
     if (!rapport) {
-      return res.status(404).json({ message: 'Rapport non trouvé' });
+      res.status(404).json({ message: 'Rapport non trouvé' });
+      return;
     }
 
-    // Vérifier les permissions
     if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      return res.status(403).json({ message: 'Accès refusé' });
+      res.status(403).json({ message: 'Accès refusé' });
+      return;
     }
 
     res.json({ rapport });
@@ -72,7 +73,7 @@ export const getRapportById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const createRapport = async (req: AuthRequest, res: Response) => {
+export const createRapport = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       typeRapport,
@@ -84,7 +85,6 @@ export const createRapport = async (req: AuthRequest, res: Response) => {
       vehicule,
     } = req.body;
 
-    // Créer le rapport
     const rapport = await Rapport.create({
       typeRapport,
       numeroOrdreService,
@@ -96,7 +96,6 @@ export const createRapport = async (req: AuthRequest, res: Response) => {
       statut: 'brouillon',
     });
 
-    // Créer le véhicule associé
     if (vehicule) {
       await Vehicule.create({
         ...vehicule,
@@ -104,7 +103,6 @@ export const createRapport = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Récupérer le rapport complet
     const rapportComplet = await Rapport.findByPk(rapport.id, {
       include: [
         { model: Bureau, as: 'bureau' },
@@ -122,7 +120,7 @@ export const createRapport = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateRapport = async (req: AuthRequest, res: Response) => {
+export const updateRapport = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -130,17 +128,17 @@ export const updateRapport = async (req: AuthRequest, res: Response) => {
     const rapport = await Rapport.findByPk(id);
 
     if (!rapport) {
-      return res.status(404).json({ message: 'Rapport non trouvé' });
+      res.status(404).json({ message: 'Rapport non trouvé' });
+      return;
     }
 
-    // Vérifier les permissions
     if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      return res.status(403).json({ message: 'Accès refusé' });
+      res.status(403).json({ message: 'Accès refusé' });
+      return;
     }
 
     await rapport.update(updates);
 
-    // Mettre à jour le véhicule si fourni
     if (updates.vehicule) {
       const vehicule = await Vehicule.findOne({ where: { rapportId: id } });
       if (vehicule) {
@@ -148,7 +146,6 @@ export const updateRapport = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Récupérer le rapport mis à jour
     const rapportMisAJour = await Rapport.findByPk(id, {
       include: [
         { model: Bureau, as: 'bureau' },
@@ -166,19 +163,20 @@ export const updateRapport = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteRapport = async (req: AuthRequest, res: Response) => {
+export const deleteRapport = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     const rapport = await Rapport.findByPk(id);
 
     if (!rapport) {
-      return res.status(404).json({ message: 'Rapport non trouvé' });
+      res.status(404).json({ message: 'Rapport non trouvé' });
+      return;
     }
 
-    // Vérifier les permissions
     if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      return res.status(403).json({ message: 'Accès refusé' });
+      res.status(403).json({ message: 'Accès refusé' });
+      return;
     }
 
     await rapport.destroy();

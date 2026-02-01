@@ -1,15 +1,16 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import { Bureau } from '../models';
+import { Op } from 'sequelize';
 
-export const getAllBureaux = async (req: AuthRequest, res: Response) => {
+export const getAllBureaux = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { search } = req.query;
     const where: any = {};
 
     if (search) {
       where.nomAgence = {
-        [require('sequelize').Op.iLike]: `%${search}%`,
+        [Op.iLike]: `%${search}%`,
       };
     }
 
@@ -25,14 +26,15 @@ export const getAllBureaux = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getBureauById = async (req: AuthRequest, res: Response) => {
+export const getBureauById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     const bureau = await Bureau.findByPk(id);
 
     if (!bureau) {
-      return res.status(404).json({ message: 'Bureau non trouvé' });
+      res.status(404).json({ message: 'Bureau non trouvé' });
+      return;
     }
 
     res.json({ bureau });
@@ -42,14 +44,15 @@ export const getBureauById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getBureauByCode = async (req: AuthRequest, res: Response) => {
+export const getBureauByCode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { code } = req.params;
 
     const bureau = await Bureau.findOne({ where: { code } });
 
     if (!bureau) {
-      return res.status(404).json({ message: 'Bureau non trouvé' });
+      res.status(404).json({ message: 'Bureau non trouvé' });
+      return;
     }
 
     res.json({ bureau });
@@ -59,14 +62,14 @@ export const getBureauByCode = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const createBureau = async (req: AuthRequest, res: Response) => {
+export const createBureau = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { code, nomAgence, responsableSinistres, telephone, email, adresse } = req.body;
 
-    // Vérifier si le code existe déjà
     const existingBureau = await Bureau.findOne({ where: { code } });
     if (existingBureau) {
-      return res.status(400).json({ message: 'Ce code bureau existe déjà' });
+      res.status(400).json({ message: 'Ce code bureau existe déjà' });
+      return;
     }
 
     const bureau = await Bureau.create({
@@ -88,7 +91,7 @@ export const createBureau = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateBureau = async (req: AuthRequest, res: Response) => {
+export const updateBureau = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -96,7 +99,8 @@ export const updateBureau = async (req: AuthRequest, res: Response) => {
     const bureau = await Bureau.findByPk(id);
 
     if (!bureau) {
-      return res.status(404).json({ message: 'Bureau non trouvé' });
+      res.status(404).json({ message: 'Bureau non trouvé' });
+      return;
     }
 
     await bureau.update(updates);
@@ -111,14 +115,15 @@ export const updateBureau = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteBureau = async (req: AuthRequest, res: Response) => {
+export const deleteBureau = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     const bureau = await Bureau.findByPk(id);
 
     if (!bureau) {
-      return res.status(404).json({ message: 'Bureau non trouvé' });
+      res.status(404).json({ message: 'Bureau non trouvé' });
+      return;
     }
 
     await bureau.destroy();
