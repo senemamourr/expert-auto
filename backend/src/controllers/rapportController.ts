@@ -1,6 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
-import { Rapport, Bureau, Vehicule, User } from '../models';
+import Rapport, { StatutRapport } from '../models/Rapport';
+import Bureau from '../models/Bureau';
+import Vehicule from '../models/Vehicule';
+import User from '../models/User';
 import { Op } from 'sequelize';
 
 export const getAllRapports = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -93,7 +96,7 @@ export const createRapport = async (req: AuthRequest, res: Response): Promise<vo
       dateSinistre,
       dateVisite,
       userId: req.userId!,
-      statut: 'brouillon',
+      statut: StatutRapport.BROUILLON,
     });
 
     if (vehicule) {
