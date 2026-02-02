@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { BureauxPage } from './pages/BureauxPage';
+import { RapportsPage } from './pages/RapportsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 const queryClient = new QueryClient({
@@ -45,6 +46,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <BureauxPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/rapports"
+            element={
+              <ProtectedRoute>
+                <RapportsPage />
               </ProtectedRoute>
             }
           />

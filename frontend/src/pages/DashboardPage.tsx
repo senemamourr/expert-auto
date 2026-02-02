@@ -44,7 +44,20 @@ export default function DashboardPage() {
               <CardTitle className="text-4xl">0</CardTitle>
             </CardHeader>
           </Card>
-
+<Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/rapports')}>
+  <CardHeader>
+    <div className="flex items-center justify-between">
+      <div>
+        <CardTitle className="text-lg">Mes rapports</CardTitle>
+        <CardDescription>Consulter tous les rapports</CardDescription>
+      </div>
+      <FileText className="w-8 h-8 text-blue-600" />
+    </div>
+  </CardHeader>
+  <CardContent>
+    <Button variant="outline" className="w-full">Consulter</Button>
+  </CardContent>
+</Card>
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>En cours</CardDescription>
