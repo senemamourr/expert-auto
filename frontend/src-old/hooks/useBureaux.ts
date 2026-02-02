@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bureauxService } from '../services/bureauxService';
-import { BureauFormData } from '../types/bureau';
+import { Bureau, BureauFormData } from '../types/bureau';
 import { toast } from 'sonner';
 
 export const useBureaux = (search?: string) => {

@@ -92,7 +92,7 @@ export const BureauxPage = () => {
             <Input
               placeholder="Rechercher une compagnie..."
               value={search}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
             />
           </div>

@@ -1,3 +1,5 @@
+// Types pour les bureaux (compagnies d'assurance)
+
 export interface Bureau {
   id: string;
   code: string;

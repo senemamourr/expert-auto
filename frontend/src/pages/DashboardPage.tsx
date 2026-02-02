@@ -1,12 +1,15 @@
-import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, Building2, LogOut, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {
-    clearAuth();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -14,94 +17,104 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-primary-600">
-              Expertise Auto
-            </h1>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-700">
-                {user?.prenom} {user?.nom}
-              </span>
-              <button onClick={handleLogout} className="btn-secondary">
-                Déconnexion
-              </button>
-            </div>
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-900">Expertise Auto</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-700">{user.prenom} {user.nom}</span>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Déconnexion
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Tableau de bord
-          </h2>
-          <p className="text-gray-600">
-            Bienvenue {user?.prenom}, gérez vos rapports d'expertise
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900">Tableau de bord</h2>
+          <p className="text-gray-600 mt-1">Bienvenue {user.prenom}, gérez vos rapports d'expertise</p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              Rapports totaux
-            </h3>
-            <p className="text-3xl font-bold text-primary-600">0</p>
-          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Rapports totaux</CardDescription>
+              <CardTitle className="text-4xl">0</CardTitle>
+            </CardHeader>
+          </Card>
 
-          <div className="card">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              En cours
-            </h3>
-            <p className="text-3xl font-bold text-yellow-600">0</p>
-          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>En cours</CardDescription>
+              <CardTitle className="text-4xl text-orange-600">0</CardTitle>
+            </CardHeader>
+          </Card>
 
-          <div className="card">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              Terminés
-            </h3>
-            <p className="text-3xl font-bold text-green-600">0</p>
-          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Terminés</CardDescription>
+              <CardTitle className="text-4xl text-green-600">0</CardTitle>
+            </CardHeader>
+          </Card>
 
-          <div className="card">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              Revenus du mois
-            </h3>
-            <p className="text-3xl font-bold text-primary-600">0 CFA</p>
-          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Revenus du mois</CardDescription>
+              <CardTitle className="text-4xl">0 CFA</CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
         {/* Actions rapides */}
-        <div className="card">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">
-            Actions rapides
-          </h3>
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Actions rapides</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="btn-primary p-6 text-left">
-              <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <p className="font-medium">Nouveau rapport</p>
-              <p className="text-sm opacity-75">Créer un rapport d'expertise</p>
-            </button>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Nouveau rapport</CardTitle>
+                    <CardDescription>Créer un rapport d'expertise</CardDescription>
+                  </div>
+                  <Plus className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full">Créer</Button>
+              </CardContent>
+            </Card>
 
-            <button className="btn-secondary p-6 text-left">
-              <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="font-medium">Mes rapports</p>
-              <p className="text-sm opacity-75">Consulter tous les rapports</p>
-            </button>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Mes rapports</CardTitle>
+                    <CardDescription>Consulter tous les rapports</CardDescription>
+                  </div>
+                  <FileText className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">Consulter</Button>
+              </CardContent>
+            </Card>
 
-            <button className="btn-secondary p-6 text-left">
-              <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              <p className="font-medium">Bureaux</p>
-              <p className="text-sm opacity-75">Gérer les compagnies</p>
-            </button>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/bureaux')}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Bureaux</CardTitle>
+                    <CardDescription>Gérer les compagnies</CardDescription>
+                  </div>
+                  <Building2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">Gérer</Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
