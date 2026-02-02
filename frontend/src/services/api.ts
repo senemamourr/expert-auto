@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_URL = (import.meta.env?.VITE_API_URL as string) || 'http://localhost:3000';
+// Récupérer l'URL de l'API depuis les variables d'environnement
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Debug: afficher l'URL utilisée
+console.log('🔗 API URL configured:', API_URL);
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -16,6 +20,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Debug: afficher l'URL complète de la requête
+    console.log('📡 API Request:', config.method?.toUpperCase(), config.url);
     return config;
   },
   (error) => {
@@ -27,6 +33,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('❌ API Error:', error.response?.status, error.config?.url);
     if (error.response?.status === 401) {
       // Token expiré ou invalide
       localStorage.removeItem('token');
