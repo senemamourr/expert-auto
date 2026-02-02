@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import { BureauxPage } from './pages/BureauxPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+		  <Route
+			path="/bureaux"
+			element={
+			<ProtectedRoute>
+			<BureauxPage />
+			</ProtectedRoute>
+			}
+		   />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/dashboard"
