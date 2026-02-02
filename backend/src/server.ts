@@ -65,7 +65,7 @@ const startServer = async () => {
 
     // Synchroniser les modèles - FORCE TRUE pour créer les tables
     console.log('🔧 Création des tables de la base de données...');
-    await syncDatabase(true); // ← CHANGÉ DE false À true
+    await syncDatabase(false); // ← CHANGÉ DE false À true
     console.log('✅ Tables créées avec succès !');
 
     // Démarrer le serveur
