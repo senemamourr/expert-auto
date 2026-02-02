@@ -63,10 +63,10 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    // Synchroniser les modèles (en développement seulement)
-    if (process.env.NODE_ENV === 'development') {
-      await syncDatabase(true); // Force la création des tables
-    }
+    // Synchroniser les modèles - FORCE TRUE pour créer les tables
+    console.log('🔧 Création des tables de la base de données...');
+    await syncDatabase(true); // ← CHANGÉ DE false À true
+    console.log('✅ Tables créées avec succès !');
 
     // Démarrer le serveur
     app.listen(PORT, () => {
