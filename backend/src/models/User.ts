@@ -22,14 +22,14 @@ interface UserAttributes {
 interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  declare public id!: string;
-  declare public email!: string;
-  declare public password!: string;
-  declare public nom!: string;
-  declare public prenom!: string;
-  declare public role!: UserRole;
-  declare public readonly createdAt!: Date;
-  declare public readonly updatedAt!: Date;
+  declare public id: string;
+  declare public email: string;
+  declare public password: string;
+  declare public nom: string;
+  declare public prenom: string;
+  declare public role: UserRole;
+  declare public readonly createdAt: Date;
+  declare public readonly updatedAt: Date;
 
   // Méthode pour comparer les mots de passe
   public async comparePassword(candidatePassword: string): Promise<boolean> {
