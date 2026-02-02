@@ -33,6 +33,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
 
   // Méthode pour comparer les mots de passe
   public async comparePassword(candidatePassword: string): Promise<boolean> {
+    if (!this.password || !candidatePassword) {
+      throw new Error('Password or candidate password is missing');
+    }
     return bcrypt.compare(candidatePassword, this.password);
   }
 
@@ -83,15 +86,23 @@ User.init(
     timestamps: true,
     hooks: {
       beforeCreate: async (user: User) => {
+        console.log('🔒 Hook beforeCreate - Hashing password...');
         if (user.password) {
           const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
+          const hashedPassword = await bcrypt.hash(user.password, salt);
+          user.password = hashedPassword;
+          console.log('✅ Password hashed successfully');
+        } else {
+          console.error('❌ No password provided to hash!');
         }
       },
       beforeUpdate: async (user: User) => {
-        if (user.changed('password')) {
+        if (user.changed('password') && user.password) {
+          console.log('🔒 Hook beforeUpdate - Hashing password...');
           const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
+          const hashedPassword = await bcrypt.hash(user.password, salt);
+          user.password = hashedPassword;
+          console.log('✅ Password hashed successfully');
         }
       },
     },
