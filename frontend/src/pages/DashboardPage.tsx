@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Building2, LogOut, Plus } from 'lucide-react';
+import { FileText, Building2, LogOut, Plus, BarChart3 } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -44,20 +44,7 @@ export default function DashboardPage() {
               <CardTitle className="text-4xl">0</CardTitle>
             </CardHeader>
           </Card>
-<Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/rapports')}>
-  <CardHeader>
-    <div className="flex items-center justify-between">
-      <div>
-        <CardTitle className="text-lg">Mes rapports</CardTitle>
-        <CardDescription>Consulter tous les rapports</CardDescription>
-      </div>
-      <FileText className="w-8 h-8 text-blue-600" />
-    </div>
-  </CardHeader>
-  <CardContent>
-    <Button variant="outline" className="w-full">Consulter</Button>
-  </CardContent>
-</Card>
+
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>En cours</CardDescription>
@@ -84,7 +71,11 @@ export default function DashboardPage() {
         <div>
           <h3 className="text-xl font-semibold mb-4">Actions rapides</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            {/* Nouveau rapport */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
+              onClick={() => navigate('/rapports/nouveau')}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -95,11 +86,17 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Button className="w-full">Créer</Button>
+                <Button className="w-full" onClick={(e) => { e.stopPropagation(); navigate('/rapports/nouveau'); }}>
+                  Créer
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            {/* Mes rapports */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
+              onClick={() => navigate('/rapports')}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -110,11 +107,17 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">Consulter</Button>
+                <Button variant="outline" className="w-full" onClick={(e) => { e.stopPropagation(); navigate('/rapports'); }}>
+                  Consulter
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/bureaux')}>
+            {/* Bureaux */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
+              onClick={() => navigate('/bureaux')}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -125,8 +128,44 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">Gérer</Button>
+                <Button variant="outline" className="w-full" onClick={(e) => { e.stopPropagation(); navigate('/bureaux'); }}>
+                  Gérer
+                </Button>
               </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Section supplémentaire */}
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">Autres fonctionnalités</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Statistiques */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
+              onClick={() => navigate('/statistiques')}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Statistiques</CardTitle>
+                    <CardDescription>Voir les graphiques et analyses</CardDescription>
+                  </div>
+                  <BarChart3 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Placeholder pour futures fonctionnalités */}
+            <Card className="opacity-50">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Prochainement</CardTitle>
+                    <CardDescription>Nouvelles fonctionnalités à venir</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
             </Card>
           </div>
         </div>
