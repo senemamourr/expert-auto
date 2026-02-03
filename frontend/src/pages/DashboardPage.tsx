@@ -1,214 +1,174 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Building2, LogOut, Plus } from 'lucide-react';
-
 export default function DashboardPage() {
-  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  console.log('🎯 DashboardPage rendered');
-  console.log('🔧 navigate function:', typeof navigate);
-
   const handleLogout = () => {
-    console.log('🚪 Logout clicked');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
-  };
-
-  const handleNavigateBureaux = () => {
-    console.log('🏢 Bureaux clicked - Attempting navigation...');
-    try {
-      navigate('/bureaux');
-      console.log('✅ Navigation executed');
-    } catch (error) {
-      console.error('❌ Navigation error:', error);
-    }
-  };
-
-  const handleNavigateRapports = () => {
-    console.log('📊 Rapports clicked - Attempting navigation...');
-    try {
-      navigate('/rapports');
-      console.log('✅ Navigation executed');
-    } catch (error) {
-      console.error('❌ Navigation error:', error);
-    }
-  };
-
-  const handleNavigateTest = () => {
-    console.log('🧪 Test clicked - Attempting navigation...');
-    try {
-      navigate('/test');
-      console.log('✅ Navigation executed');
-    } catch (error) {
-      console.error('❌ Navigation error:', error);
-    }
+    window.location.href = '/login';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '20px' }}>
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-900">Expertise Auto</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-700">{user.prenom} {user.nom}</span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
+      <div style={{ backgroundColor: 'white', padding: '20px', marginBottom: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a' }}>Expertise Auto</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span>{user.prenom} {user.nom}</span>
+            <button 
+              onClick={handleLogout}
+              style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
+            >
               Déconnexion
-            </Button>
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Tableau de bord</h2>
-          <p className="text-gray-600 mt-1">Bienvenue {user.prenom}, gérez vos rapports d'expertise</p>
-        </div>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>Tableau de bord</h2>
+        <p style={{ color: '#6b7280', marginBottom: '32px' }}>Bienvenue {user.prenom}</p>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Rapports totaux</CardDescription>
-              <CardTitle className="text-4xl">0</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>En cours</CardDescription>
-              <CardTitle className="text-4xl text-orange-600">0</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Terminés</CardDescription>
-              <CardTitle className="text-4xl text-green-600">0</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Revenus du mois</CardDescription>
-              <CardTitle className="text-4xl">0 CFA</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Boutons de test directs */}
-        <div className="mb-8 p-4 bg-yellow-100 border border-yellow-300 rounded">
-          <h3 className="font-bold mb-2">🧪 Tests de navigation (avec console.log)</h3>
-          <div className="flex gap-2">
-            <Button onClick={handleNavigateTest}>
-              Test /test
-            </Button>
-            <Button onClick={handleNavigateBureaux}>
-              Test /bureaux
-            </Button>
-            <Button onClick={handleNavigateRapports}>
-              Test /rapports
-            </Button>
+        {/* TEST SECTION - BIG YELLOW BOX */}
+        <div style={{ 
+          backgroundColor: '#fef3c7', 
+          border: '3px solid #f59e0b', 
+          padding: '32px', 
+          borderRadius: '12px', 
+          marginBottom: '32px',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#92400e' }}>
+            🧪 TESTS DE NAVIGATION
+          </h3>
+          
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '24px' }}>
+            <a 
+              href="/test"
+              style={{ 
+                display: 'block',
+                padding: '16px 32px', 
+                backgroundColor: '#10b981', 
+                color: 'white', 
+                textDecoration: 'none', 
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '18px'
+              }}
+            >
+              Aller sur /test
+            </a>
+            
+            <a 
+              href="/bureaux"
+              style={{ 
+                display: 'block',
+                padding: '16px 32px', 
+                backgroundColor: '#3b82f6', 
+                color: 'white', 
+                textDecoration: 'none', 
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '18px'
+              }}
+            >
+              Aller sur /bureaux
+            </a>
+            
+            <a 
+              href="/rapports"
+              style={{ 
+                display: 'block',
+                padding: '16px 32px', 
+                backgroundColor: '#8b5cf6', 
+                color: 'white', 
+                textDecoration: 'none', 
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '18px'
+              }}
+            >
+              Aller sur /rapports
+            </a>
           </div>
-          <p className="text-sm mt-2 text-gray-600">
-            Ouvrez la console (F12) et cliquez sur ces boutons pour voir les logs
+
+          <p style={{ fontSize: '14px', color: '#78350f' }}>
+            Cliquez sur ces liens pour tester la navigation
           </p>
         </div>
 
-        {/* Actions rapides */}
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Actions rapides</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Nouveau rapport */}
-            <Card 
-              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
-              onClick={handleNavigateRapports}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Nouveau rapport</CardTitle>
-                    <CardDescription>Créer un rapport d'expertise</CardDescription>
-                  </div>
-                  <Plus className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full" 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    handleNavigateRapports(); 
-                  }}
-                >
-                  Créer
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Mes rapports */}
-            <Card 
-              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
-              onClick={handleNavigateRapports}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Mes rapports</CardTitle>
-                    <CardDescription>Consulter tous les rapports</CardDescription>
-                  </div>
-                  <FileText className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    handleNavigateRapports(); 
-                  }}
-                >
-                  Consulter
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Bureaux */}
-            <Card 
-              className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500"
-              onClick={handleNavigateBureaux}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Bureaux</CardTitle>
-                    <CardDescription>Gérer les compagnies</CardDescription>
-                  </div>
-                  <Building2 className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    handleNavigateBureaux(); 
-                  }}
-                >
-                  Gérer
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Stats Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Rapports totaux</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>0</div>
+          </div>
+          
+          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>En cours</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f59e0b' }}>0</div>
+          </div>
+          
+          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Terminés</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#10b981' }}>0</div>
+          </div>
+          
+          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Revenus du mois</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>0 CFA</div>
           </div>
         </div>
-      </main>
+
+        {/* Actions rapides avec LIENS */}
+        <div>
+          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Actions rapides</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+            
+            <a 
+              href="/rapports"
+              style={{ 
+                display: 'block',
+                backgroundColor: 'white', 
+                padding: '24px', 
+                borderRadius: '8px', 
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '2px solid transparent',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = 'transparent'}
+            >
+              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>📊 Mes rapports</div>
+              <div style={{ color: '#6b7280', fontSize: '14px' }}>Consulter tous les rapports</div>
+            </a>
+
+            <a 
+              href="/bureaux"
+              style={{ 
+                display: 'block',
+                backgroundColor: 'white', 
+                padding: '24px', 
+                borderRadius: '8px', 
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                textDecoration: 'none',
+                color: 'inherit',
+                border: '2px solid transparent',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = 'transparent'}
+            >
+              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>🏢 Bureaux</div>
+              <div style={{ color: '#6b7280', fontSize: '14px' }}>Gérer les compagnies</div>
+            </a>
+
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
