@@ -25,12 +25,24 @@ app.use(cors({
 }));
 
 // Middlewares de parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logs en développement
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+  });
+}
 
 // Route de santé
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API Expertise Auto en ligne' });
+  res.json({ 
+    status: 'OK', 
+    message: 'API Expertise Auto en ligne',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Routes API
@@ -40,12 +52,15 @@ app.use('/api/bureaux', bureauRoutes);
 
 // Route 404
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route non trouvée' });
+  res.status(404).json({ 
+    message: 'Route non trouvée',
+    path: req.originalUrl,
+  });
 });
 
 // Gestionnaire d'erreurs global
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Erreur:', err);
+  console.error('❌ Erreur:', err);
   res.status(err.status || 500).json({
     message: err.message || 'Erreur serveur interne',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
@@ -55,30 +70,74 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Démarrage du serveur
 const startServer = async () => {
   try {
+    console.log('🔄 Démarrage du serveur...');
+    console.log('=================================');
+    
     // Tester la connexion à la base de données
+    console.log('📊 Test de connexion à la base de données...');
     const dbConnected = await testConnection();
     
     if (!dbConnected) {
       console.error('❌ Impossible de démarrer le serveur sans connexion à la base de données');
       process.exit(1);
     }
+    
+    console.log('✅ Connexion à la base de données réussie');
 
-    // Synchroniser les modèles - FORCE TRUE pour créer les tables
-    console.log('🔧 Création des tables de la base de données...');
-    await syncDatabase(false); // ← CHANGÉ DE false À true
-    console.log('✅ Tables créées avec succès !');
+    // Synchroniser les modèles
+    console.log('🔧 Synchronisation des modèles avec la base de données...');
+    
+    // En développement : alter permet de mettre à jour sans supprimer
+    // En production : sync simple pour éviter les modifications accidentelles
+    const syncMode = process.env.NODE_ENV === 'production' ? false : true;
+    
+    await syncDatabase(syncMode);
+    
+    if (syncMode) {
+      console.log('✅ Tables synchronisées (mode: alter - mise à jour)');
+    } else {
+      console.log('✅ Tables synchronisées (mode: production - création si nécessaire)');
+    }
 
     // Démarrer le serveur
     app.listen(PORT, () => {
-      console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 API disponible sur: http://localhost:${PORT}`);
+      console.log('=================================');
+      console.log('🚀 Serveur démarré avec succès !');
+      console.log('=================================');
+      console.log(`📍 Port: ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 API: http://localhost:${PORT}`);
+      console.log(`💚 Health: http://localhost:${PORT}/health`);
+      console.log('=================================');
     });
+
   } catch (error) {
     console.error('❌ Erreur lors du démarrage du serveur:', error);
+    console.error('Stack:', (error as Error).stack);
     process.exit(1);
   }
 };
+
+// Gestion des erreurs non capturées
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Gestion de l'arrêt gracieux
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM reçu, arrêt du serveur...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('👋 SIGINT reçu, arrêt du serveur...');
+  process.exit(0);
+});
 
 startServer();
 

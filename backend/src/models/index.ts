@@ -100,6 +100,32 @@ Fourniture.belongsTo(Choc, {
   as: 'choc',
 });
 
+// ============================================
+// FONCTION DE SYNCHRONISATION
+// ============================================
+
+/**
+ * Synchronise les modèles avec la base de données
+ * @param alter - Si true, met à jour les tables sans les supprimer (recommandé en dev)
+ *                Si false, crée uniquement les tables manquantes (recommandé en prod)
+ */
+export const syncDatabase = async (alter: boolean = false): Promise<void> => {
+  try {
+    if (alter) {
+      // Mode ALTER : Met à jour les colonnes sans supprimer les tables
+      await sequelize.sync({ alter: true });
+      console.log('✅ Base de données synchronisée (mode: alter)');
+    } else {
+      // Mode SAFE : Crée uniquement les tables manquantes
+      await sequelize.sync();
+      console.log('✅ Base de données synchronisée (mode: safe)');
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors de la synchronisation de la base de données:', error);
+    throw error;
+  }
+};
+
 // Export tous les modèles
 export default {
   sequelize,
@@ -111,4 +137,5 @@ export default {
   Assure,
   Choc,
   Fourniture,
+  syncDatabase,
 };
