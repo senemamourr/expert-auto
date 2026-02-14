@@ -4,6 +4,8 @@ import { Toaster } from 'sonner';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { BureauxPage } from './pages/BureauxPage';
+import { RapportsPage } from './pages/RapportsPage';
+import { NouveauRapportPage } from './pages/NouveauRapportPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 const queryClient = new QueryClient({
@@ -52,76 +54,28 @@ function App() {
             }
           />
 
-          {/* Rapports - Page placeholder */}
+          {/* Rapports */}
           <Route
             path="/rapports"
             element={
               <ProtectedRoute>
-                <div style={{ padding: '40px', textAlign: 'center' }}>
-                  <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>
-                    📊 Rapports
-                  </h1>
-                  <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-                    Module en cours de développement
-                  </p>
-                  <a 
-                    href="/dashboard"
-                    style={{
-                      display: 'inline-block',
-                      padding: '12px 24px',
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      textDecoration: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    ← Retour au Dashboard
-                  </a>
-                </div>
+                <RapportsPage />
               </ProtectedRoute>
             }
           />
 
-          {/* Page de test */}
+          {/* Nouveau rapport */}
           <Route
-            path="/test"
+            path="/rapports/nouveau"
             element={
-              <div style={{ 
-                minHeight: '100vh', 
-                backgroundColor: '#10b981', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                flexDirection: 'column',
-                gap: '24px'
-              }}>
-                <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: 'white' }}>
-                  ✅ NAVIGATION FONCTIONNE !
-                </h1>
-                <a 
-                  href="/dashboard"
-                  style={{
-                    padding: '16px 32px',
-                    backgroundColor: 'white',
-                    color: '#10b981',
-                    textDecoration: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                    fontSize: '18px'
-                  }}
-                >
-                  Retour au Dashboard
-                </a>
-              </div>
+              <ProtectedRoute>
+                <NouveauRapportPage />
+              </ProtectedRoute>
             }
           />
 
-          {/* Catch-all - doit être en dernier */}
-          <Route 
-            path="*" 
-            element={<Navigate to="/dashboard" replace />} 
-          />
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
       
