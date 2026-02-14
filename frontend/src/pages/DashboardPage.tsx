@@ -1,174 +1,133 @@
+import { useNavigate } from 'react-router-dom';
+import { FileText, Building2, Plus, LogOut } from 'lucide-react';
+
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '20px' }}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div style={{ backgroundColor: 'white', padding: '20px', marginBottom: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a' }}>Expertise Auto</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span>{user.prenom} {user.nom}</span>
-            <button 
-              onClick={handleLogout}
-              style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              Déconnexion
-            </button>
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+        <div className="container mx-auto px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Expertise Automobile</h1>
+              <p className="text-blue-100 text-sm mt-1">Tableau de bord</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden md:block">
+                <p className="font-medium text-sm">{user.prenom} {user.nom}</p>
+                <p className="text-xs text-blue-100">{user.role || 'Expert'}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Déconnexion</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>Tableau de bord</h2>
-        <p style={{ color: '#6b7280', marginBottom: '32px' }}>Bienvenue {user.prenom}</p>
-
-        {/* TEST SECTION - BIG YELLOW BOX */}
-        <div style={{ 
-          backgroundColor: '#fef3c7', 
-          border: '3px solid #f59e0b', 
-          padding: '32px', 
-          borderRadius: '12px', 
-          marginBottom: '32px',
-          textAlign: 'center'
-        }}>
-          <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#92400e' }}>
-            🧪 TESTS DE NAVIGATION
-          </h3>
-          
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '24px' }}>
-            <a 
-              href="/test"
-              style={{ 
-                display: 'block',
-                padding: '16px 32px', 
-                backgroundColor: '#10b981', 
-                color: 'white', 
-                textDecoration: 'none', 
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                fontSize: '18px'
-              }}
-            >
-              Aller sur /test
-            </a>
-            
-            <a 
-              href="/bureaux"
-              style={{ 
-                display: 'block',
-                padding: '16px 32px', 
-                backgroundColor: '#3b82f6', 
-                color: 'white', 
-                textDecoration: 'none', 
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                fontSize: '18px'
-              }}
-            >
-              Aller sur /bureaux
-            </a>
-            
-            <a 
-              href="/rapports"
-              style={{ 
-                display: 'block',
-                padding: '16px 32px', 
-                backgroundColor: '#8b5cf6', 
-                color: 'white', 
-                textDecoration: 'none', 
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                fontSize: '18px'
-              }}
-            >
-              Aller sur /rapports
-            </a>
-          </div>
-
-          <p style={{ fontSize: '14px', color: '#78350f' }}>
-            Cliquez sur ces liens pour tester la navigation
+      <main className="container mx-auto px-6 py-8">
+        {/* Bienvenue */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Bienvenue {user.prenom} 👋
+          </h2>
+          <p className="text-gray-600">
+            Gérez vos expertises automobiles efficacement
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Rapports totaux</div>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>0</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-l-blue-500">
+            <p className="text-sm text-gray-600 uppercase font-semibold mb-1">Rapports totaux</p>
+            <p className="text-4xl font-bold text-gray-900">0</p>
           </div>
-          
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>En cours</div>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f59e0b' }}>0</div>
+
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-l-orange-500">
+            <p className="text-sm text-gray-600 uppercase font-semibold mb-1">En cours</p>
+            <p className="text-4xl font-bold text-orange-600">0</p>
           </div>
-          
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Terminés</div>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#10b981' }}>0</div>
+
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-l-green-500">
+            <p className="text-sm text-gray-600 uppercase font-semibold mb-1">Terminés</p>
+            <p className="text-4xl font-bold text-green-600">0</p>
           </div>
-          
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Revenus du mois</div>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>0 CFA</div>
+
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-l-purple-500">
+            <p className="text-sm text-gray-600 uppercase font-semibold mb-1">Revenus du mois</p>
+            <p className="text-4xl font-bold text-gray-900">0 <span className="text-base text-gray-600">CFA</span></p>
           </div>
         </div>
 
-        {/* Actions rapides avec LIENS */}
+        {/* Actions rapides */}
         <div>
-          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Actions rapides</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          <h3 className="text-xl font-semibold mb-4 text-gray-900">Actions rapides</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <a 
-              href="/rapports"
-              style={{ 
-                display: 'block',
-                backgroundColor: 'white', 
-                padding: '24px', 
-                borderRadius: '8px', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                textDecoration: 'none',
-                color: 'inherit',
-                border: '2px solid transparent',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = 'transparent'}
+            {/* Nouveau rapport */}
+            <button
+              onClick={() => navigate('/rapports/nouveau')}
+              className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 text-left border-2 border-transparent hover:border-blue-500 group"
             >
-              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>📊 Mes rapports</div>
-              <div style={{ color: '#6b7280', fontSize: '14px' }}>Consulter tous les rapports</div>
-            </a>
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plus className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Nouveau rapport</h4>
+              <p className="text-sm text-gray-600">
+                Créer un nouveau rapport d'expertise
+              </p>
+            </button>
 
-            <a 
-              href="/bureaux"
-              style={{ 
-                display: 'block',
-                backgroundColor: 'white', 
-                padding: '24px', 
-                borderRadius: '8px', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                textDecoration: 'none',
-                color: 'inherit',
-                border: '2px solid transparent',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = 'transparent'}
+            {/* Mes rapports */}
+            <button
+              onClick={() => navigate('/rapports')}
+              className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 text-left border-2 border-transparent hover:border-green-500 group"
             >
-              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>🏢 Bureaux</div>
-              <div style={{ color: '#6b7280', fontSize: '14px' }}>Gérer les compagnies</div>
-            </a>
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileText className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Mes rapports</h4>
+              <p className="text-sm text-gray-600">
+                Consulter tous les rapports d'expertise
+              </p>
+            </button>
+
+            {/* Bureaux */}
+            <button
+              onClick={() => navigate('/bureaux')}
+              className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 text-left border-2 border-transparent hover:border-purple-500 group"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Building2 className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">Bureaux</h4>
+              <p className="text-sm text-gray-600">
+                Gérer les compagnies d'assurance
+              </p>
+            </button>
 
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
