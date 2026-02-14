@@ -14,6 +14,7 @@ import { Etape5Recapitulatif } from '@/components/rapports/Etape5Recapitulatif';
 import { useCreateRapport } from '@/hooks/useRapports';
 import { toast } from 'sonner';
 import { StatutRapport } from '@/types/rapport';
+import { calculerMontantsRapport, calculerAgeVehicule } from '@/services/calculRapport.service';
 
 const steps = [
   { id: 1, title: 'Informations', description: 'Données générales' },
@@ -80,7 +81,6 @@ export const NouveauRapportPage = () => {
     const step = currentStep;
     
     if (step === 0) {
-      // Validation étape 1
       const { typeRapport, numeroOrdreService, bureauId, numeroSinistre, dateSinistre, dateVisite } = formData;
       if (!typeRapport || !numeroOrdreService || !bureauId || !numeroSinistre || !dateSinistre || !dateVisite) {
         toast.error('Veuillez remplir tous les champs obligatoires');
@@ -89,7 +89,6 @@ export const NouveauRapportPage = () => {
     }
     
     if (step === 1) {
-      // Validation étape 2
       const v = formData.vehicule;
       if (!v.marque || !v.type || !v.genre || !v.immatriculation || !v.numeroChasis || 
           !v.kilometrage || !v.dateMiseCirculation || !v.couleur || !v.sourceEnergie || 
@@ -104,7 +103,6 @@ export const NouveauRapportPage = () => {
     }
     
     if (step === 2) {
-      // Validation étape 3
       const a = formData.assure;
       if (!a.nom || !a.prenom || !a.telephone || !a.adresse) {
         toast.error('Veuillez remplir tous les champs de l\'assuré');
@@ -113,7 +111,6 @@ export const NouveauRapportPage = () => {
     }
     
     if (step === 3) {
-      // Validation étape 4
       if (!formData.chocs || formData.chocs.length === 0) {
         toast.error('Veuillez ajouter au moins un choc');
         return false;
@@ -144,35 +141,71 @@ export const NouveauRapportPage = () => {
     }
   };
 
-  const handleSaveDraft = async () => {
-    try {
-      const data = {
-        ...formData,
-        statut: StatutRapport.BROUILLON,
-        montantTotal: 0, // Sera calculé plus tard
-      };
-      await createRapport.mutateAsync(data);
-      toast.success('Brouillon sauvegardé avec succès');
-      navigate('/rapports');
-    } catch (error) {
-      toast.error('Erreur lors de la sauvegarde du brouillon');
-    }
-  };
-
   const onSubmit = async (data: any) => {
     try {
+      // Calcul de l'âge du véhicule
+      const ageVehicule = calculerAgeVehicule(data.vehicule.dateMiseCirculation);
+      
+      // Calcul des montants
+      const calculs = calculerMontantsRapport({
+        chocs: data.chocs,
+        ageVehicule,
+      });
+
+      // Préparation des données pour l'API
       const rapportData = {
-        ...data,
+        // Informations générales
+        typeRapport: data.typeRapport,
+        numeroOrdreService: data.numeroOrdreService,
+        bureauId: data.bureauId,
+        numeroSinistre: data.numeroSinistre,
+        dateSinistre: data.dateSinistre,
+        dateVisite: data.dateVisite,
         statut: StatutRapport.BROUILLON,
-        montantTotal: 0, // Sera calculé automatiquement par le backend
+        montantTotal: calculs.montantTotal,
+        
+        // Véhicule
+        vehicule: {
+          marque: data.vehicule.marque,
+          type: data.vehicule.type,
+          genre: data.vehicule.genre,
+          immatriculation: data.vehicule.immatriculation,
+          numeroChasis: data.vehicule.numeroChasis,
+          kilometrage: parseInt(data.vehicule.kilometrage),
+          dateMiseCirculation: data.vehicule.dateMiseCirculation,
+          couleur: data.vehicule.couleur,
+          sourceEnergie: data.vehicule.sourceEnergie,
+          puissanceFiscale: parseInt(data.vehicule.puissanceFiscale),
+          valeurNeuve: parseFloat(data.vehicule.valeurNeuve),
+        },
+        
+        // Assuré
+        assure: {
+          nom: data.assure.nom,
+          prenom: data.assure.prenom,
+          telephone: data.assure.telephone,
+          email: data.assure.email || null,
+          adresse: data.assure.adresse,
+        },
+        
+        // Chocs
+        chocs: data.chocs.map((choc: any) => ({
+          nomChoc: choc.nomChoc,
+          description: choc.description,
+          tempsReparation: parseFloat(choc.tempsReparation),
+          montantPeinture: parseFloat(choc.montantPeinture) || 0,
+        })),
       };
+
+      console.log('Données envoyées:', rapportData);
       
       await createRapport.mutateAsync(rapportData);
       toast.success('Rapport créé avec succès !');
       navigate('/rapports');
-    } catch (error) {
-      toast.error('Erreur lors de la création du rapport');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Erreur complète:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Erreur lors de la création';
+      toast.error(errorMessage);
     }
   };
 
@@ -195,14 +228,12 @@ export const NouveauRapportPage = () => {
       />
 
       <main className="container mx-auto px-6 py-8">
-        {/* Stepper */}
         <Card className="shadow-lg mb-8">
           <CardContent className="p-6">
             <Stepper steps={steps} currentStep={currentStep} />
           </CardContent>
         </Card>
 
-        {/* Formulaire */}
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card className="shadow-lg">
             <CardContent className="p-8">
@@ -215,16 +246,14 @@ export const NouveauRapportPage = () => {
                 </p>
               </div>
 
-              {/* Contenu dynamique selon l'étape */}
               <div className="min-h-[400px]">
                 {currentStep === 0 && <Etape1InfosGenerales register={register} errors={errors} />}
                 {currentStep === 1 && <Etape2Vehicule register={register} errors={errors} />}
                 {currentStep === 2 && <Etape3Assure register={register} errors={errors} />}
-                {currentStep === 3 && <Etape4Chocs register={register} errors={errors} chocsArray={chocsArray} />}
+                {currentStep === 3 && <Etape4Chocs register={register} errors={errors} chocsArray={chocsArray} control={control} />}
                 {currentStep === 4 && <Etape5Recapitulatif formData={formData} />}
               </div>
 
-              {/* Boutons de navigation */}
               <div className="flex items-center justify-between pt-8 border-t mt-8">
                 <div>
                   {!isFirstStep && (
@@ -241,25 +270,23 @@ export const NouveauRapportPage = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSaveDraft}
-                    disabled={createRapport.isPending}
-                    className="gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Sauvegarder brouillon
-                  </Button>
-
                   {isLastStep ? (
                     <Button
                       type="submit"
                       disabled={createRapport.isPending}
                       className="bg-green-600 hover:bg-green-700 gap-2"
                     >
-                      {createRapport.isPending ? 'Création...' : 'Créer le rapport'}
-                      <ArrowRight className="w-4 h-4" />
+                      {createRapport.isPending ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          Création...
+                        </>
+                      ) : (
+                        <>
+                          Créer le rapport
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
                     </Button>
                   ) : (
                     <Button
