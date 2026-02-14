@@ -1,10 +1,11 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
+import sequelize from '../config/database';
 
-export interface FournitureAttributes {
+interface FournitureAttributes {
   id: string;
   chocId: string;
   designation: string;
-  reference?: string | null;
+  reference?: string;
   quantite: number;
   prixUnitaire: number;
   prixTotal: number;
@@ -12,11 +13,13 @@ export interface FournitureAttributes {
   updatedAt?: Date;
 }
 
-export class Fourniture extends Model<FournitureAttributes> implements FournitureAttributes {
+interface FournitureCreationAttributes extends Optional<FournitureAttributes, 'id'> {}
+
+class Fourniture extends Model<FournitureAttributes, FournitureCreationAttributes> implements FournitureAttributes {
   public id!: string;
   public chocId!: string;
   public designation!: string;
-  public reference!: string | null;
+  public reference?: string;
   public quantite!: number;
   public prixUnitaire!: number;
   public prixTotal!: number;
@@ -24,54 +27,52 @@ export class Fourniture extends Model<FournitureAttributes> implements Fournitur
   public readonly updatedAt!: Date;
 }
 
-export const initFourniture = (sequelize: Sequelize): typeof Fourniture => {
-  Fourniture.init(
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      chocId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: 'chocs',
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-      },
-      designation: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-      },
-      reference: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-      },
-      quantite: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 1,
-      },
-      prixUnitaire: {
-        type: DataTypes.DECIMAL(12, 2),
-        allowNull: false,
-        defaultValue: 0,
-      },
-      prixTotal: {
-        type: DataTypes.DECIMAL(12, 2),
-        allowNull: false,
-        defaultValue: 0,
-      },
+Fourniture.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
     },
-    {
-      sequelize,
-      tableName: 'fournitures',
-      timestamps: true,
-      underscored: true,
-    }
-  );
+    chocId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'chocs',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+    },
+    designation: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    reference: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    quantite: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
+    prixUnitaire: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    prixTotal: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'fournitures',
+    timestamps: true,
+    underscored: true,
+  }
+);
 
-  return Fourniture;
-};
+export default Fourniture;

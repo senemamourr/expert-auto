@@ -1,35 +1,11 @@
-import { Sequelize } from 'sequelize';
-import { initBureau } from './Bureau';
-import { initUser } from './User';
-import { initRapport } from './Rapport';
-import { initVehicule } from './Vehicule';
-import { initAssure } from './Assure';
-import { initChoc } from './Choc';
-import { initFourniture } from './Fourniture';
-
-// Sequelize instance (à initialiser depuis config)
-export const sequelize = new Sequelize(
-  process.env.DATABASE_URL || '',
-  {
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
-  }
-);
-
-// Initialiser tous les modèles
-export const Bureau = initBureau(sequelize);
-export const User = initUser(sequelize);
-export const Rapport = initRapport(sequelize);
-export const Vehicule = initVehicule(sequelize);
-export const Assure = initAssure(sequelize);
-export const Choc = initChoc(sequelize);
-export const Fourniture = initFourniture(sequelize);
+import Bureau from './Bureau';
+import User from './User';
+import Rapport from './Rapport';
+import Vehicule from './Vehicule';
+import Assure from './Assure';
+import Choc from './Choc';
+import Fourniture from './Fourniture';
+import sequelize from '../config/database';
 
 // ============================================
 // DÉFINIR TOUTES LES ASSOCIATIONS (RELATIONS)
@@ -46,7 +22,7 @@ Rapport.belongsTo(Bureau, {
   as: 'bureau',
 });
 
-// User <-> Rapports
+// User <-> Rapports  
 User.hasMany(Rapport, {
   foreignKey: 'userId',
   as: 'rapports',
@@ -104,32 +80,35 @@ Fourniture.belongsTo(Choc, {
 // FONCTION DE SYNCHRONISATION
 // ============================================
 
-/**
- * Synchronise les modèles avec la base de données
- * @param alter - Si true, met à jour les tables sans les supprimer (recommandé en dev)
- *                Si false, crée uniquement les tables manquantes (recommandé en prod)
- */
 export const syncDatabase = async (alter: boolean = false): Promise<void> => {
   try {
     if (alter) {
-      // Mode ALTER : Met à jour les colonnes sans supprimer les tables
       await sequelize.sync({ alter: true });
       console.log('✅ Base de données synchronisée (mode: alter)');
     } else {
-      // Mode SAFE : Crée uniquement les tables manquantes
       await sequelize.sync();
       console.log('✅ Base de données synchronisée (mode: safe)');
     }
   } catch (error) {
-    console.error('❌ Erreur lors de la synchronisation de la base de données:', error);
+    console.error('❌ Erreur lors de la synchronisation:', error);
     throw error;
   }
 };
 
-// Export tous les modèles
+// Export des modèles
+export {
+  sequelize,
+  Bureau,
+  User,
+  Rapport,
+  Vehicule,
+  Assure,
+  Choc,
+  Fourniture,
+};
+
 export default {
   sequelize,
-  Sequelize,
   Bureau,
   User,
   Rapport,
