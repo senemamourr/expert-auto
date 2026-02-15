@@ -1,82 +1,11 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middlewares/auth';
-import Rapport, { StatutRapport } from '../models/Rapport';
-import Bureau from '../models/Bureau';
-import Vehicule from '../models/Vehicule';
-import User from '../models/User';
-import { Op } from 'sequelize';
+import { Request, Response } from 'express';
+import { Rapport, Vehicule, Assure, Choc, Fourniture, Bureau } from '../models';
+import sequelize from '../config/database';
 
-export const getAllRapports = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { statut, numeroSinistre, page = '1', limit = '10' } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
-
-    const where: any = {};
-    
-    if (req.user?.role !== 'admin') {
-      where.userId = req.userId;
-    }
-
-    if (statut) where.statut = statut;
-    if (numeroSinistre) where.numeroSinistre = numeroSinistre;
-
-    const { rows: rapports, count } = await Rapport.findAndCountAll({
-      where,
-      include: [
-        { model: Bureau, as: 'bureau' },
-        { model: Vehicule, as: 'vehicule' },
-        { model: User, as: 'expert', attributes: ['id', 'nom', 'prenom', 'email'] },
-      ],
-      limit: Number(limit),
-      offset,
-      order: [['createdAt', 'DESC']],
-    });
-
-    res.json({
-      rapports,
-      pagination: {
-        total: count,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(count / Number(limit)),
-      },
-    });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des rapports:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
-};
-
-export const getRapportById = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-
-    const rapport = await Rapport.findByPk(id, {
-      include: [
-        { model: Bureau, as: 'bureau' },
-        { model: Vehicule, as: 'vehicule' },
-        { model: User, as: 'expert', attributes: ['id', 'nom', 'prenom', 'email'] },
-      ],
-    });
-
-    if (!rapport) {
-      res.status(404).json({ message: 'Rapport non trouvé' });
-      return;
-    }
-
-    if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      res.status(403).json({ message: 'Accès refusé' });
-      return;
-    }
-
-    res.json({ rapport });
-  } catch (error) {
-    console.error('Erreur lors de la récupération du rapport:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
-};
-
-export const createRapport = async (req: AuthRequest, res: Response): Promise<void> => {
+// Créer un nouveau rapport
+export const createRapport = async (req: Request, res: Response): Promise<void> => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const {
       typeRapport,
@@ -85,9 +14,26 @@ export const createRapport = async (req: AuthRequest, res: Response): Promise<vo
       numeroSinistre,
       dateSinistre,
       dateVisite,
+      statut,
+      montantTotal,
       vehicule,
+      assure,
+      chocs,
     } = req.body;
 
+    // Validation
+    if (!typeRapport || !numeroOrdreService || !bureauId || !numeroSinistre) {
+      await transaction.rollback();
+      res.status(400).json({ 
+        message: 'Champs obligatoires manquants',
+        required: ['typeRapport', 'numeroOrdreService', 'bureauId', 'numeroSinistre']
+      });
+      return;
+    }
+
+    console.log('📝 Création du rapport...');
+
+    // 1. CRÉER LE RAPPORT D'ABORD
     const rapport = await Rapport.create({
       typeRapport,
       numeroOrdreService,
@@ -95,98 +41,236 @@ export const createRapport = async (req: AuthRequest, res: Response): Promise<vo
       numeroSinistre,
       dateSinistre,
       dateVisite,
-      userId: req.userId!,
-      statut: StatutRapport.BROUILLON,
-    });
+      statut: statut || 'BROUILLON',
+      montantTotal: montantTotal || 0,
+      userId: (req as any).user?.id || null,
+    }, { transaction });
 
+    console.log('✅ Rapport créé avec ID:', rapport.id);
+
+    // 2. CRÉER LE VÉHICULE (maintenant rapportId existe)
     if (vehicule) {
       await Vehicule.create({
-        ...vehicule,
-        rapportId: rapport.id,
-      });
+        rapportId: rapport.id, // ✅ Maintenant rapportId existe !
+        marque: vehicule.marque,
+        type: vehicule.type,
+        genre: vehicule.genre,
+        immatriculation: vehicule.immatriculation,
+        numeroChasis: vehicule.numeroChasis,
+        kilometrage: vehicule.kilometrage,
+        dateMiseCirculation: vehicule.dateMiseCirculation,
+        couleur: vehicule.couleur,
+        sourceEnergie: vehicule.sourceEnergie,
+        puissanceFiscale: vehicule.puissanceFiscale,
+        valeurNeuve: vehicule.valeurNeuve,
+      }, { transaction });
+
+      console.log('✅ Véhicule créé');
     }
 
+    // 3. CRÉER L'ASSURÉ
+    if (assure) {
+      await Assure.create({
+        rapportId: rapport.id,
+        nom: assure.nom,
+        prenom: assure.prenom,
+        telephone: assure.telephone,
+        email: assure.email || null,
+        adresse: assure.adresse,
+      }, { transaction });
+
+      console.log('✅ Assuré créé');
+    }
+
+    // 4. CRÉER LES CHOCS
+    if (chocs && chocs.length > 0) {
+      for (let i = 0; i < chocs.length; i++) {
+        const choc = chocs[i];
+        
+        const chocCreated = await Choc.create({
+          rapportId: rapport.id,
+          nomChoc: choc.nomChoc,
+          description: choc.description,
+          modeleVehiculeSvg: choc.modeleVehiculeSvg || null,
+          tempsReparation: choc.tempsReparation,
+          montantPeinture: choc.montantPeinture || 0,
+          ordre: i + 1,
+        }, { transaction });
+
+        console.log(`✅ Choc ${i + 1} créé`);
+
+        // 5. CRÉER LES FOURNITURES DU CHOC
+        if (choc.fournitures && choc.fournitures.length > 0) {
+          for (const fourniture of choc.fournitures) {
+            await Fourniture.create({
+              chocId: chocCreated.id,
+              designation: fourniture.designation,
+              reference: fourniture.reference || null,
+              quantite: fourniture.quantite || 1,
+              prixUnitaire: fourniture.prixUnitaire || 0,
+              prixTotal: (fourniture.quantite || 1) * (fourniture.prixUnitaire || 0),
+            }, { transaction });
+          }
+          console.log(`✅ ${choc.fournitures.length} fourniture(s) créée(s) pour le choc ${i + 1}`);
+        }
+      }
+    }
+
+    // Commit de la transaction
+    await transaction.commit();
+    console.log('✅ Transaction commitée');
+
+    // Recharger le rapport avec toutes les relations
     const rapportComplet = await Rapport.findByPk(rapport.id, {
       include: [
         { model: Bureau, as: 'bureau' },
         { model: Vehicule, as: 'vehicule' },
+        { model: Assure, as: 'assure' },
+        { 
+          model: Choc, 
+          as: 'chocs',
+          include: [{ model: Fourniture, as: 'fournitures' }]
+        },
       ],
     });
 
-    res.status(201).json({
-      message: 'Rapport créé avec succès',
-      rapport: rapportComplet,
+    res.status(201).json(rapportComplet);
+    
+  } catch (error: any) {
+    // Rollback en cas d'erreur
+    await transaction.rollback();
+    
+    console.error('❌ Erreur création rapport:', error);
+    
+    res.status(500).json({ 
+      message: 'Erreur lors de la création du rapport',
+      error: error.message,
+      details: error.errors ? error.errors.map((e: any) => e.message) : []
     });
-  } catch (error) {
-    console.error('Erreur lors de la création du rapport:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-export const updateRapport = async (req: AuthRequest, res: Response): Promise<void> => {
+// Récupérer tous les rapports
+export const getAllRapports = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { search, statut, typeRapport, page = 1, limit = 20 } = req.query;
+    const offset = ((page as number) - 1) * (limit as number);
+
+    const where: any = {};
+    
+    if (statut) where.statut = statut;
+    if (typeRapport) where.typeRapport = typeRapport;
+
+    const { count, rows } = await Rapport.findAndCountAll({
+      where,
+      include: [
+        { model: Bureau, as: 'bureau' },
+        { model: Vehicule, as: 'vehicule' },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit as string),
+      offset,
+    });
+
+    res.json({
+      rapports: rows,
+      total: count,
+      page: parseInt(page as string),
+      totalPages: Math.ceil(count / parseInt(limit as string)),
+    });
+  } catch (error: any) {
+    console.error('Erreur récupération rapports:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des rapports',
+      error: error.message 
+    });
+  }
+};
+
+// Récupérer un rapport par ID
+export const getRapportById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const rapport = await Rapport.findByPk(id, {
+      include: [
+        { model: Bureau, as: 'bureau' },
+        { model: Vehicule, as: 'vehicule' },
+        { model: Assure, as: 'assure' },
+        { 
+          model: Choc, 
+          as: 'chocs',
+          include: [{ model: Fourniture, as: 'fournitures' }]
+        },
+      ],
+    });
+
+    if (!rapport) {
+      res.status(404).json({ message: 'Rapport non trouvé' });
+      return;
+    }
+
+    res.json(rapport);
+  } catch (error: any) {
+    console.error('Erreur récupération rapport:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération du rapport',
+      error: error.message 
+    });
+  }
+};
+
+// Mettre à jour un rapport
+export const updateRapport = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const updates = req.body;
 
     const rapport = await Rapport.findByPk(id);
-
+    
     if (!rapport) {
       res.status(404).json({ message: 'Rapport non trouvé' });
-      return;
-    }
-
-    if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      res.status(403).json({ message: 'Accès refusé' });
       return;
     }
 
     await rapport.update(updates);
 
-    if (updates.vehicule) {
-      const vehicule = await Vehicule.findOne({ where: { rapportId: id } });
-      if (vehicule) {
-        await vehicule.update(updates.vehicule);
-      }
-    }
-
-    const rapportMisAJour = await Rapport.findByPk(id, {
-      include: [
-        { model: Bureau, as: 'bureau' },
-        { model: Vehicule, as: 'vehicule' },
-      ],
+    res.json({ message: 'Rapport mis à jour', rapport });
+  } catch (error: any) {
+    console.error('Erreur mise à jour rapport:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la mise à jour du rapport',
+      error: error.message 
     });
-
-    res.json({
-      message: 'Rapport mis à jour avec succès',
-      rapport: rapportMisAJour,
-    });
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du rapport:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-export const deleteRapport = async (req: AuthRequest, res: Response): Promise<void> => {
+// Supprimer un rapport
+export const deleteRapport = async (req: Request, res: Response): Promise<void> => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const { id } = req.params;
 
     const rapport = await Rapport.findByPk(id);
-
+    
     if (!rapport) {
+      await transaction.rollback();
       res.status(404).json({ message: 'Rapport non trouvé' });
       return;
     }
 
-    if (req.user?.role !== 'admin' && rapport.userId !== req.userId) {
-      res.status(403).json({ message: 'Accès refusé' });
-      return;
-    }
-
-    await rapport.destroy();
+    await rapport.destroy({ transaction });
+    
+    await transaction.commit();
 
     res.json({ message: 'Rapport supprimé avec succès' });
-  } catch (error) {
-    console.error('Erreur lors de la suppression du rapport:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+  } catch (error: any) {
+    await transaction.rollback();
+    console.error('Erreur suppression rapport:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la suppression du rapport',
+      error: error.message 
+    });
   }
 };
