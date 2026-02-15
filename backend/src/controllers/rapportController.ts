@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Rapport, Vehicule, Assure, Choc, Fourniture, Bureau } from '../models';
 import sequelize from '../config/database';
+import { randomUUID } from 'crypto';
 
 // Créer un nouveau rapport
 export const createRapport = async (req: Request, res: Response): Promise<void> => {
@@ -33,8 +34,12 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
 
     console.log('📝 Création du rapport...');
 
+    // Générer l'ID manuellement pour éviter les problèmes
+    const rapportId = randomUUID();
+
     // 1. CRÉER LE RAPPORT D'ABORD
     const rapport = await Rapport.create({
+      id: rapportId, // ✅ ID explicite
       typeRapport,
       numeroOrdreService,
       bureauId,
@@ -44,7 +49,10 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
       statut: statut || 'BROUILLON',
       montantTotal: montantTotal || 0,
       userId: (req as any).user?.id || null,
-    }, { transaction });
+    }, { 
+      transaction,
+      returning: true,
+    });
 
     console.log('✅ Rapport créé avec ID:', rapport.id);
 
