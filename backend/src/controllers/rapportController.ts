@@ -56,7 +56,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
         type: vehicule.type,
         genre: vehicule.genre,
         immatriculation: vehicule.immatriculation,
-        numeroChasis: vehicule.numeroChasis,
+        numeroChassis: vehicule.numeroChasis, // ✅ Corrigé : numeroChassis avec 2 's'
         kilometrage: vehicule.kilometrage,
         dateMiseCirculation: vehicule.dateMiseCirculation,
         couleur: vehicule.couleur,
