@@ -71,7 +71,6 @@ Fourniture.init(
     sequelize,
     tableName: 'fournitures',
     timestamps: true,
-    underscored: true,
   }
 );
 

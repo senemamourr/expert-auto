@@ -113,7 +113,6 @@ Vehicule.init(
     sequelize,
     tableName: 'vehicules',
     timestamps: true,
-    underscored: true,
   }
 );
 

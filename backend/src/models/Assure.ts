@@ -71,7 +71,6 @@ Assure.init(
     sequelize,
     tableName: 'assures',
     timestamps: true,
-    underscored: true,
   }
 );
 

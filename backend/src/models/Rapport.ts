@@ -92,7 +92,6 @@ Rapport.init(
     sequelize,
     tableName: 'rapports',
     timestamps: true,
-    underscored: true,
   }
 );
 

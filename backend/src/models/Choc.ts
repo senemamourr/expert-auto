@@ -85,7 +85,6 @@ Choc.init(
     sequelize,
     tableName: 'chocs',
     timestamps: true,
-    underscored: true,
   }
 );
 
