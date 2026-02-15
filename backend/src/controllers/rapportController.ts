@@ -54,12 +54,13 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
       returning: true,
     });
 
-    console.log('✅ Rapport créé avec ID:', rapport.id);
+    console.log('✅ Rapport créé avec ID:', rapportId);
 
     // 2. CRÉER LE VÉHICULE (maintenant rapportId existe)
     if (vehicule) {
       await Vehicule.create({
-        rapportId: rapport.id, // ✅ Maintenant rapportId existe !
+        rapportId: rapportId, // ✅ Utiliser rapportId directement
+        marque: vehicule.marque,
         marque: vehicule.marque,
         type: vehicule.type,
         genre: vehicule.genre,
@@ -79,7 +80,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
     // 3. CRÉER L'ASSURÉ
     if (assure) {
       await Assure.create({
-        rapportId: rapport.id,
+        rapportId: rapportId, // ✅ Utiliser rapportId directement
         nom: assure.nom,
         prenom: assure.prenom,
         telephone: assure.telephone,
@@ -96,7 +97,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
         const choc = chocs[i];
         
         const chocCreated = await Choc.create({
-          rapportId: rapport.id,
+          rapportId: rapportId, // ✅ Utiliser rapportId directement
           nomChoc: choc.nomChoc,
           description: choc.description,
           modeleVehiculeSvg: choc.modeleVehiculeSvg || null,
@@ -130,7 +131,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
     console.log('✅ Transaction commitée');
 
     // Recharger le rapport avec toutes les relations
-    const rapportComplet = await Rapport.findByPk(rapport.id, {
+    const rapportComplet = await Rapport.findByPk(rapportId, { // ✅ Utiliser rapportId directement
       include: [
         { model: Bureau, as: 'bureau' },
         { model: Vehicule, as: 'vehicule' },
