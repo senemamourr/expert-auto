@@ -61,7 +61,6 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
       await Vehicule.create({
         rapportId: rapportId, // ✅ Utiliser rapportId directement
         marque: vehicule.marque,
-        marque: vehicule.marque,
         type: vehicule.type,
         genre: vehicule.genre,
         immatriculation: vehicule.immatriculation,
@@ -96,7 +95,11 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
       for (let i = 0; i < chocs.length; i++) {
         const choc = chocs[i];
         
+        // Générer chocId manuellement pour éviter undefined
+        const chocId = randomUUID();
+        
         const chocCreated = await Choc.create({
+          id: chocId, // ✅ ID explicite
           rapportId: rapportId, // ✅ Utiliser rapportId directement
           nomChoc: choc.nomChoc,
           description: choc.description,
@@ -113,7 +116,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
         if (choc.fournitures && choc.fournitures.length > 0) {
           for (const fourniture of choc.fournitures) {
             await Fourniture.create({
-              chocId: chocCreated.id,
+              chocId: chocId, // ✅ Utiliser chocId directement au lieu de chocCreated.id
               designation: fourniture.designation,
               reference: fourniture.reference || null,
               quantite: fourniture.quantite || 1,
