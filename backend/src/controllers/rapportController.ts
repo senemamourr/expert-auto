@@ -93,6 +93,7 @@ export const createRapport = async (req: Request, res: Response): Promise<void> 
           description: choc.description,
           modeleVehiculeSvg: choc.modeleVehiculeSvg || null,
           tempsReparation: choc.tempsReparation,
+          tauxHoraire: choc.tauxHoraire || 4000, // ✅ Taux horaire par choc (défaut 4000 CFA)
           montantPeinture: choc.montantPeinture || 0,
           ordre: i + 1,
         }, { transaction });
