@@ -87,17 +87,13 @@ const startServer = async () => {
     // Synchroniser les modèles
     console.log('🔧 Synchronisation des modèles avec la base de données...');
     
-    // En développement : alter permet de mettre à jour sans supprimer
-    // En production : sync simple pour éviter les modifications accidentelles
-    const syncMode = process.env.NODE_ENV === 'production' ? false : true;
+    // ⚠️ TEMPORAIRE : Forcer alter: true pour créer la colonne tauxHoraire
+    // À remettre à false après le premier déploiement
+    const syncMode = true; // FORCE ALTER MODE
     
     await syncDatabase(syncMode);
     
-    if (syncMode) {
-      console.log('✅ Tables synchronisées (mode: alter - mise à jour)');
-    } else {
-      console.log('✅ Tables synchronisées (mode: production - création si nécessaire)');
-    }
+    console.log('✅ Tables synchronisées (mode: ALTER FORCÉ - création colonne tauxHoraire)');
 
     // Démarrer le serveur
     app.listen(PORT, () => {

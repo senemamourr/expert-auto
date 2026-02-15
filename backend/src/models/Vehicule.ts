@@ -15,7 +15,6 @@ interface VehiculeAttributes {
   sourceEnergie: string;
   puissanceFiscale: number;
   valeurNeuve: number;
-  chargeUtile?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -36,7 +35,6 @@ class Vehicule extends Model<VehiculeAttributes, VehiculeCreationAttributes> imp
   public sourceEnergie!: string;
   public puissanceFiscale!: number;
   public valeurNeuve!: number;
-  public chargeUtile?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -103,10 +101,6 @@ Vehicule.init(
     valeurNeuve: {
       type: DataTypes.DECIMAL(15, 2), // ✅ CORRIGÉ : 15 chiffres
       allowNull: false,
-    },
-    chargeUtile: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
     },
   },
   {
