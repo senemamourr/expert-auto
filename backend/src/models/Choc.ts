@@ -7,7 +7,8 @@ interface ChocAttributes {
   nomChoc: string;
   description: string;
   modeleVehiculeSvg?: string;
-  tempsReparation: number;
+  tempsReparation: number; // En heures
+  tauxHoraire: number; // ✅ NOUVEAU : Prix de la main d'œuvre horaire pour ce choc
   montantPeinture: number;
   ordre: number;
   createdAt?: Date;
@@ -23,6 +24,7 @@ class Choc extends Model<ChocAttributes, ChocCreationAttributes> implements Choc
   public description!: string;
   public modeleVehiculeSvg?: string;
   public tempsReparation!: number;
+  public tauxHoraire!: number; // ✅ NOUVEAU
   public montantPeinture!: number;
   public ordre!: number;
   public readonly createdAt!: Date;
@@ -62,8 +64,14 @@ Choc.init(
       allowNull: false,
       defaultValue: 0,
     },
+    tauxHoraire: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 4000, // Valeur par défaut : 4000 CFA/heure
+      comment: 'Prix de la main d\'œuvre horaire pour ce choc spécifique',
+    },
     montantPeinture: {
-      type: DataTypes.DECIMAL(12, 2),
+      type: DataTypes.DECIMAL(15, 2), // ✅ Augmenté à 15 chiffres
       allowNull: false,
       defaultValue: 0,
     },

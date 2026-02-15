@@ -1,30 +1,17 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
-export enum TypeRapport {
-  ESTIMATIF_REPARATION = 'estimatif_reparation',
-  VALEUR_VENALE = 'valeur_venale',
-  TIERCE_EXPERTISE = 'tierce_expertise',
-}
-
-export enum StatutRapport {
-  BROUILLON = 'brouillon',
-  EN_COURS = 'en_cours',
-  TERMINE = 'termine',
-  ARCHIVE = 'archive',
-}
-
 interface RapportAttributes {
   id: string;
-  typeRapport: TypeRapport;
-  numeroOrdreService?: string;
+  typeRapport: 'ESTIMATIF_REPARATION' | 'VALEUR_VENALE' | 'TIERCE_EXPERTISE';
+  numeroOrdreService: string;
   bureauId: string;
   numeroSinistre: string;
   dateSinistre: Date;
-  dateVisite?: Date;
-  statut: StatutRapport;
-  montantTotal?: number;
-  userId: string;
+  dateVisite: Date;
+  statut: 'BROUILLON' | 'EN_COURS' | 'TERMINE' | 'ARCHIVE';
+  montantTotal: number;
+  userId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -33,15 +20,15 @@ interface RapportCreationAttributes extends Optional<RapportAttributes, 'id'> {}
 
 class Rapport extends Model<RapportAttributes, RapportCreationAttributes> implements RapportAttributes {
   public id!: string;
-  public typeRapport!: TypeRapport;
-  public numeroOrdreService?: string;
+  public typeRapport!: 'ESTIMATIF_REPARATION' | 'VALEUR_VENALE' | 'TIERCE_EXPERTISE';
+  public numeroOrdreService!: string;
   public bureauId!: string;
   public numeroSinistre!: string;
   public dateSinistre!: Date;
-  public dateVisite?: Date;
-  public statut!: StatutRapport;
-  public montantTotal?: number;
-  public userId!: string;
+  public dateVisite!: Date;
+  public statut!: 'BROUILLON' | 'EN_COURS' | 'TERMINE' | 'ARCHIVE';
+  public montantTotal!: number;
+  public userId?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -54,12 +41,12 @@ Rapport.init(
       primaryKey: true,
     },
     typeRapport: {
-      type: DataTypes.ENUM(...Object.values(TypeRapport)),
+      type: DataTypes.ENUM('ESTIMATIF_REPARATION', 'VALEUR_VENALE', 'TIERCE_EXPERTISE'),
       allowNull: false,
     },
     numeroOrdreService: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
+      type: DataTypes.STRING(100),
+      allowNull: false,
     },
     bureauId: {
       type: DataTypes.UUID,
@@ -70,29 +57,31 @@ Rapport.init(
       },
     },
     numeroSinistre: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     dateSinistre: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     dateVisite: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     statut: {
-      type: DataTypes.ENUM(...Object.values(StatutRapport)),
+      type: DataTypes.ENUM('BROUILLON', 'EN_COURS', 'TERMINE', 'ARCHIVE'),
+      defaultValue: 'BROUILLON',
       allowNull: false,
-      defaultValue: StatutRapport.BROUILLON,
     },
     montantTotal: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
+      type: DataTypes.DECIMAL(15, 2), // ✅ CORRIGÉ : 15 chiffres au lieu de 10
+      defaultValue: 0,
+      allowNull: false,
+      comment: 'Montant total du rapport (peut atteindre 999 999 999 999 999,99)',
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'users',
         key: 'id',
@@ -103,17 +92,7 @@ Rapport.init(
     sequelize,
     tableName: 'rapports',
     timestamps: true,
-    indexes: [
-      {
-        fields: ['numeroSinistre'],
-      },
-      {
-        fields: ['statut'],
-      },
-      {
-        fields: ['userId'],
-      },
-    ],
+    underscored: true,
   }
 );
 

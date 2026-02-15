@@ -57,12 +57,12 @@ Fourniture.init(
       defaultValue: 1,
     },
     prixUnitaire: {
-      type: DataTypes.DECIMAL(12, 2),
+      type: DataTypes.DECIMAL(15, 2), // ✅ CORRIGÉ : 15 chiffres
       allowNull: false,
       defaultValue: 0,
     },
     prixTotal: {
-      type: DataTypes.DECIMAL(12, 2),
+      type: DataTypes.DECIMAL(15, 2), // ✅ CORRIGÉ : 15 chiffres
       allowNull: false,
       defaultValue: 0,
     },

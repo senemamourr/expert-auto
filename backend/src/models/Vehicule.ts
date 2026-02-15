@@ -8,13 +8,14 @@ interface VehiculeAttributes {
   type: string;
   genre: string;
   immatriculation: string;
-  numeroChassis?: string;
-  kilometrage?: number;
-  dateMiseCirculation?: Date;
-  couleur?: string;
-  sourceEnergie?: string;
-  puissanceFiscale?: number;
-  valeurNeuve?: number;
+  numeroChassis: string; // ✅ 2 's'
+  kilometrage: number;
+  dateMiseCirculation: Date;
+  couleur: string;
+  sourceEnergie: string;
+  puissanceFiscale: number;
+  valeurNeuve: number;
+  chargeUtile?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -28,13 +29,14 @@ class Vehicule extends Model<VehiculeAttributes, VehiculeCreationAttributes> imp
   public type!: string;
   public genre!: string;
   public immatriculation!: string;
-  public numeroChassis?: string;
-  public kilometrage?: number;
-  public dateMiseCirculation?: Date;
-  public couleur?: string;
-  public sourceEnergie?: string;
-  public puissanceFiscale?: number;
-  public valeurNeuve?: number;
+  public numeroChassis!: string; // ✅ 2 's'
+  public kilometrage!: number;
+  public dateMiseCirculation!: Date;
+  public couleur!: string;
+  public sourceEnergie!: string;
+  public puissanceFiscale!: number;
+  public valeurNeuve!: number;
+  public chargeUtile?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -53,6 +55,7 @@ Vehicule.init(
         model: 'rapports',
         key: 'id',
       },
+      onDelete: 'CASCADE',
     },
     marque: {
       type: DataTypes.STRING(100),
@@ -70,31 +73,38 @@ Vehicule.init(
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-    numeroChassis: {
+    numeroChassis: { // ✅ 2 's'
       type: DataTypes.STRING(17),
-      allowNull: true,
+      allowNull: false,
+      validate: {
+        len: [17, 17],
+      },
     },
     kilometrage: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
     },
     dateMiseCirculation: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     couleur: {
       type: DataTypes.STRING(50),
-      allowNull: true,
+      allowNull: false,
     },
     sourceEnergie: {
       type: DataTypes.STRING(50),
-      allowNull: true,
+      allowNull: false,
     },
     puissanceFiscale: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
     },
     valeurNeuve: {
+      type: DataTypes.DECIMAL(15, 2), // ✅ CORRIGÉ : 15 chiffres
+      allowNull: false,
+    },
+    chargeUtile: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
@@ -103,6 +113,7 @@ Vehicule.init(
     sequelize,
     tableName: 'vehicules',
     timestamps: true,
+    underscored: true,
   }
 );
 
