@@ -98,8 +98,6 @@ export interface Rapport {
   userId: string;
   createdAt: string;
   updatedAt?: string;
-  
-  // Relations
   vehicule?: Vehicule;
   assure?: Assure;
   chocs?: Choc[];
@@ -109,15 +107,12 @@ export interface Rapport {
 }
 
 export interface RapportFormData {
-  // Étape 1 : Renseignements
   typeRapport: TypeRapport;
   numeroOrdreService: string;
   bureauId: string;
   numeroSinistre: string;
   dateSinistre: string;
   dateVisite: string;
-  
-  // Étape 2 : Véhicule
   vehicule: {
     marque: string;
     type: string;
@@ -131,16 +126,12 @@ export interface RapportFormData {
     puissanceFiscale: number;
     valeurNeuve: number;
   };
-  
-  // Étape 3 : Assuré
   assure: {
     nom: string;
     prenom: string;
     telephone: string;
     adresse: string;
   };
-
-  // Étape 4 : Chocs
   chocs?: Array<{
     nomChoc: string;
     description: string;
@@ -173,7 +164,6 @@ export interface MontantsCalcules {
   montantFournitures: number;
   montantPeinture: number;
   sousTotal: number;
-  ageVehicule: number;
   tauxVetuste: number;
   montantVetuste: number;
   montantTotal: number;

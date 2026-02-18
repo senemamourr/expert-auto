@@ -1,357 +1,345 @@
-import { UseFormRegister, FieldErrors, UseFieldArrayReturn, Control, useFieldArray } from 'react-hook-form';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
+import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Plus, Trash2, Package } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Trash2, Package } from 'lucide-react';
+import { calculerMainOeuvreChoc, formaterMontant } from '@/services/calculRapport.service';
+
+interface Fourniture {
+  designation: string;
+  reference: string;
+  quantite: number;
+  prixUnitaire: number;
+  prixTotal: number;
+}
+
+interface Choc {
+  nomChoc: string;
+  description: string;
+  tempsReparation: number;
+  tauxHoraire: number;
+  montantPeinture: number;
+  fournitures: Fourniture[];
+}
 
 interface Etape4Props {
   register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
-  chocsArray: UseFieldArrayReturn<any, 'chocs', 'id'>;
-  control: Control<any>;
+  watch: UseFormWatch<any>;
+  setValue: UseFormSetValue<any>;
 }
 
-export const Etape4Chocs = ({ register, errors, chocsArray, control }: Etape4Props) => {
-  const { fields, append, remove } = chocsArray;
+export default function Etape4Chocs({ register, watch, setValue }: Etape4Props) {
+  const chocs = watch('chocs') || [];
 
+  // Ajouter un nouveau choc
   const ajouterChoc = () => {
-    append({
+    const nouveauChoc: Choc = {
       nomChoc: '',
       description: '',
       tempsReparation: 0,
+      tauxHoraire: 5000, // Valeur par défaut : 5000 FCFA/heure
       montantPeinture: 0,
       fournitures: [],
-    });
+    };
+    setValue('chocs', [...chocs, nouveauChoc]);
+  };
+
+  // Supprimer un choc
+  const supprimerChoc = (index: number) => {
+    const nouveauxChocs = chocs.filter((_: any, i: number) => i !== index);
+    setValue('chocs', nouveauxChocs);
+  };
+
+  // Ajouter une fourniture à un choc
+  const ajouterFourniture = (chocIndex: number) => {
+    const nouvelleFourniture: Fourniture = {
+      designation: '',
+      reference: '',
+      quantite: 1,
+      prixUnitaire: 0,
+      prixTotal: 0,
+    };
+    
+    const nouveauxChocs = [...chocs];
+    if (!nouveauxChocs[chocIndex].fournitures) {
+      nouveauxChocs[chocIndex].fournitures = [];
+    }
+    nouveauxChocs[chocIndex].fournitures.push(nouvelleFourniture);
+    setValue('chocs', nouveauxChocs);
+  };
+
+  // Supprimer une fourniture
+  const supprimerFourniture = (chocIndex: number, fournitureIndex: number) => {
+    const nouveauxChocs = [...chocs];
+    nouveauxChocs[chocIndex].fournitures = nouveauxChocs[chocIndex].fournitures.filter(
+      (_: any, i: number) => i !== fournitureIndex
+    );
+    setValue('chocs', nouveauxChocs);
+  };
+
+  // Calculer le prix total d'une fourniture
+  const calculerPrixTotal = (chocIndex: number, fournitureIndex: number) => {
+    const choc = chocs[chocIndex];
+    const fourniture = choc.fournitures[fournitureIndex];
+    const prixTotal = fourniture.quantite * fourniture.prixUnitaire;
+    
+    const nouveauxChocs = [...chocs];
+    nouveauxChocs[chocIndex].fournitures[fournitureIndex].prixTotal = prixTotal;
+    setValue('chocs', nouveauxChocs);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <AlertCircle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
+        <Package className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
         <div>
-          <h3 className="font-semibold text-orange-900 mb-1">Chocs et dégâts constatés</h3>
+          <h3 className="font-semibold text-orange-900 mb-1">Chocs et relevés de dégâts</h3>
           <p className="text-sm text-orange-700">
-            Décrivez chaque zone endommagée (choc) séparément. Vous pouvez ajouter autant de chocs que nécessaire.
+            Décrivez chaque zone endommagée avec les réparations nécessaires et le prix de la main d'œuvre.
           </p>
         </div>
       </div>
 
       {/* Liste des chocs */}
-      <div className="space-y-6">
-        {fields.length === 0 ? (
-          <Card className="border-2 border-dashed border-gray-300">
-            <CardContent className="py-12 text-center">
-              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-4">Aucun choc ajouté</p>
-              <Button onClick={ajouterChoc} variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter le premier choc
+      {chocs.map((choc: Choc, chocIndex: number) => (
+        <Card key={chocIndex} className="border-2 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-blue-900">
+                Choc #{chocIndex + 1}
+              </h3>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => supprimerChoc(chocIndex)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          fields.map((field: any, chocIndex) => (
-            <ChocCard
-              key={field.id}
-              chocIndex={chocIndex}
-              field={field}
-              register={register}
-              errors={errors}
-              control={control}
-              onRemove={() => remove(chocIndex)}
-              canRemove={fields.length > 1}
-            />
-          ))
-        )}
-      </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Nom du choc */}
+              <div>
+                <Label htmlFor={`chocs.${chocIndex}.nomChoc`}>
+                  Nom du choc <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id={`chocs.${chocIndex}.nomChoc`}
+                  placeholder="Ex: Choc avant droit, Tôlerie, Mécanique..."
+                  {...register(`chocs.${chocIndex}.nomChoc`, {
+                    required: 'Le nom du choc est obligatoire',
+                  })}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <Label htmlFor={`chocs.${chocIndex}.description`}>
+                  Description des dégâts
+                </Label>
+                <Textarea
+                  id={`chocs.${chocIndex}.description`}
+                  placeholder="Décrivez les dégâts constatés..."
+                  rows={3}
+                  {...register(`chocs.${chocIndex}.description`)}
+                />
+              </div>
+
+              {/* Temps réparation + Taux horaire + Peinture */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg">
+                {/* Temps de réparation */}
+                <div>
+                  <Label htmlFor={`chocs.${chocIndex}.tempsReparation`}>
+                    Temps réparation (heures) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id={`chocs.${chocIndex}.tempsReparation`}
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    placeholder="Ex: 5.5"
+                    {...register(`chocs.${chocIndex}.tempsReparation`, {
+                      required: 'Le temps est obligatoire',
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Nombre d'heures de main d'œuvre</p>
+                </div>
+
+                {/* Taux horaire */}
+                <div>
+                  <Label htmlFor={`chocs.${chocIndex}.tauxHoraire`}>
+                    Prix horaire MO (FCFA) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id={`chocs.${chocIndex}.tauxHoraire`}
+                    type="number"
+                    step="100"
+                    min="0"
+                    placeholder="Ex: 5000"
+                    {...register(`chocs.${chocIndex}.tauxHoraire`, {
+                      required: 'Le taux horaire est obligatoire',
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Prix par heure de travail</p>
+                </div>
+
+                {/* Montant peinture */}
+                <div>
+                  <Label htmlFor={`chocs.${chocIndex}.montantPeinture`}>
+                    Peinture (FCFA)
+                  </Label>
+                  <Input
+                    id={`chocs.${chocIndex}.montantPeinture`}
+                    type="number"
+                    step="100"
+                    min="0"
+                    placeholder="Ex: 50000"
+                    {...register(`chocs.${chocIndex}.montantPeinture`, {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Coût de la peinture</p>
+                </div>
+              </div>
+
+              {/* Calcul main d'œuvre pour ce choc */}
+              {choc.tempsReparation > 0 && choc.tauxHoraire > 0 && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm font-semibold text-green-900">
+                    💰 Main d'œuvre pour ce choc : {' '}
+                    {formaterMontant(calculerMainOeuvreChoc(choc.tempsReparation, choc.tauxHoraire))}
+                  </p>
+                  <p className="text-xs text-green-700 mt-1">
+                    Calcul : {choc.tempsReparation}h × {formaterMontant(choc.tauxHoraire)}/h
+                  </p>
+                </div>
+              )}
+
+              {/* Fournitures */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-900">Pièces et fournitures</h4>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => ajouterFourniture(chocIndex)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Ajouter une pièce
+                  </Button>
+                </div>
+
+                {choc.fournitures && choc.fournitures.length > 0 ? (
+                  <div className="space-y-3">
+                    {choc.fournitures.map((fourniture: Fourniture, fournitureIndex: number) => (
+                      <div
+                        key={fournitureIndex}
+                        className="grid grid-cols-12 gap-2 p-3 bg-gray-50 rounded-lg"
+                      >
+                        {/* Désignation */}
+                        <div className="col-span-4">
+                          <Input
+                            placeholder="Désignation"
+                            {...register(
+                              `chocs.${chocIndex}.fournitures.${fournitureIndex}.designation`
+                            )}
+                          />
+                        </div>
+
+                        {/* Référence */}
+                        <div className="col-span-2">
+                          <Input
+                            placeholder="Référence"
+                            {...register(
+                              `chocs.${chocIndex}.fournitures.${fournitureIndex}.reference`
+                            )}
+                          />
+                        </div>
+
+                        {/* Quantité */}
+                        <div className="col-span-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="Qté"
+                            {...register(
+                              `chocs.${chocIndex}.fournitures.${fournitureIndex}.quantite`,
+                              {
+                                valueAsNumber: true,
+                                onChange: () => calculerPrixTotal(chocIndex, fournitureIndex),
+                              }
+                            )}
+                          />
+                        </div>
+
+                        {/* Prix unitaire */}
+                        <div className="col-span-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder="Prix unit."
+                            {...register(
+                              `chocs.${chocIndex}.fournitures.${fournitureIndex}.prixUnitaire`,
+                              {
+                                valueAsNumber: true,
+                                onChange: () => calculerPrixTotal(chocIndex, fournitureIndex),
+                              }
+                            )}
+                          />
+                        </div>
+
+                        {/* Prix total (calculé automatiquement) */}
+                        <div className="col-span-1 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-green-600">
+                            {formaterMontant(fourniture.prixTotal || 0)}
+                          </span>
+                        </div>
+
+                        {/* Bouton supprimer */}
+                        <div className="col-span-1 flex items-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => supprimerFourniture(chocIndex, fournitureIndex)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Aucune pièce ajoutée. Cliquez sur "Ajouter une pièce" pour commencer.
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
 
       {/* Bouton ajouter un choc */}
-      {fields.length > 0 && (
-        <div className="flex justify-center">
-          <Button type="button" onClick={ajouterChoc} variant="outline" size="lg">
-            <Plus className="w-5 h-5 mr-2" />
-            Ajouter un autre choc
-          </Button>
+      <Button type="button" onClick={ajouterChoc} className="w-full" size="lg">
+        <Plus className="w-5 h-5 mr-2" />
+        Ajouter un choc
+      </Button>
+
+      {chocs.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <Package className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <p>Aucun choc ajouté. Cliquez sur "Ajouter un choc" pour commencer.</p>
         </div>
       )}
-
-      {/* Info */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">💡</div>
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-2">Comment remplir ?</p>
-              <ul className="space-y-1">
-                <li>• <strong>Nom du choc :</strong> Zone endommagée (ex: "Choc avant", "Tôlerie")</li>
-                <li>• <strong>Temps réparation :</strong> Heures de main d'œuvre nécessaires</li>
-                <li>• <strong>Peinture :</strong> Coût de la peinture si nécessaire</li>
-                <li>• <strong>Description :</strong> Détails des dégâts constatés</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-// Composant pour un choc individuel
-interface ChocCardProps {
-  chocIndex: number;
-  field: any;
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
-  control: Control<any>;
-  onRemove: () => void;
-  canRemove: boolean;
-}
-
-function ChocCard({ chocIndex, field, register, errors, control, onRemove, canRemove }: ChocCardProps) {
-  const fournituresArray = useFieldArray({
-    control,
-    name: `chocs.${chocIndex}.fournitures`,
-  });
-
-  const ajouterFourniture = () => {
-    fournituresArray.append({
-      designation: '',
-      reference: '',
-      quantite: 1,
-      prixUnitaire: 0,
-    });
-  };
-
-  // Calculer le total des fournitures
-  const calculerTotalFournitures = () => {
-    if (!field.fournitures || field.fournitures.length === 0) return 0;
-    return field.fournitures.reduce((sum: number, f: any) => {
-      const total = (f.quantite || 0) * (f.prixUnitaire || 0);
-      return sum + total;
-    }, 0);
-  };
-
-  const totalFournitures = calculerTotalFournitures();
-
-  return (
-    <Card className="border-l-4 border-l-orange-500">
-      <CardHeader className="bg-gray-50 border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Choc #{chocIndex + 1}</CardTitle>
-          {canRemove && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Supprimer le choc
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-
-      <CardContent className="pt-6 space-y-6">
-        {/* Informations du choc */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Nom du choc */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">
-              Nom du choc <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              placeholder="Ex: 1er degré, Choc avant, TOL..."
-              {...register(`chocs.${chocIndex}.nomChoc`, {
-                required: 'Le nom du choc est obligatoire'
-              })}
-              className="h-10"
-            />
-            {errors.chocs?.[chocIndex]?.nomChoc && (
-              <p className="text-sm text-red-600">
-                {errors.chocs[chocIndex].nomChoc.message as string}
-              </p>
-            )}
-          </div>
-
-          {/* Temps de réparation */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">
-              Temps de réparation (heures) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="number"
-              step="0.5"
-              placeholder="Ex: 5.5"
-              {...register(`chocs.${chocIndex}.tempsReparation`, {
-                required: 'Le temps est obligatoire',
-                min: { value: 0, message: 'Doit être positif' }
-              })}
-              className="h-10"
-            />
-            {errors.chocs?.[chocIndex]?.tempsReparation && (
-              <p className="text-sm text-red-600">
-                {errors.chocs[chocIndex].tempsReparation.message as string}
-              </p>
-            )}
-          </div>
-
-          {/* Montant peinture */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">
-              Montant peinture (CFA)
-            </Label>
-            <Input
-              type="number"
-              placeholder="Ex: 150000"
-              {...register(`chocs.${chocIndex}.montantPeinture`, {
-                min: { value: 0, message: 'Doit être positif' }
-              })}
-              className="h-10"
-            />
-            <p className="text-xs text-gray-500">Mettre 0 si pas de peinture</p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold">
-            Description détaillée <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            placeholder="Décrivez les dégâts constatés (pare-choc enfoncé, aile rayée, etc.)"
-            rows={3}
-            {...register(`chocs.${chocIndex}.description`, {
-              required: 'La description est obligatoire',
-              minLength: { value: 10, message: 'Minimum 10 caractères' }
-            })}
-            className="resize-none"
-          />
-          {errors.chocs?.[chocIndex]?.description && (
-            <p className="text-sm text-red-600">
-              {errors.chocs[chocIndex].description.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* FOURNITURES / PIÈCES */}
-        <div className="border-t pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-blue-600" />
-              <h4 className="font-semibold text-gray-900">
-                Pièces / Fournitures 
-                {totalFournitures > 0 && (
-                  <span className="ml-2 text-sm font-normal text-green-600">
-                    (Total: {totalFournitures.toLocaleString()} CFA)
-                  </span>
-                )}
-              </h4>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={ajouterFourniture}
-              className="text-blue-600 hover:bg-blue-50"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Ajouter une pièce
-            </Button>
-          </div>
-
-          {/* Liste des fournitures */}
-          {fournituresArray.fields.length > 0 ? (
-            <div className="space-y-3">
-              {fournituresArray.fields.map((fourniture, fournitureIndex) => (
-                <FournitureRow
-                  key={fourniture.id}
-                  chocIndex={chocIndex}
-                  fournitureIndex={fournitureIndex}
-                  register={register}
-                  onRemove={() => fournituresArray.remove(fournitureIndex)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border-2 border-dashed">
-              <Package className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-              <p>Aucune pièce ajoutée</p>
-              <p className="text-xs mt-1">Cliquez sur "Ajouter une pièce" pour commencer</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Composant pour une ligne de fourniture
-interface FournitureRowProps {
-  chocIndex: number;
-  fournitureIndex: number;
-  register: UseFormRegister<any>;
-  onRemove: () => void;
-}
-
-function FournitureRow({ chocIndex, fournitureIndex, register, onRemove }: FournitureRowProps) {
-  return (
-    <div className="grid grid-cols-12 gap-3 p-3 bg-gray-50 rounded-lg border hover:border-blue-300 transition-colors">
-      {/* Désignation */}
-      <div className="col-span-4">
-        <Input
-          placeholder="Ex: CAPOT MOTEUR"
-          {...register(`chocs.${chocIndex}.fournitures.${fournitureIndex}.designation`)}
-          className="h-9 text-sm"
-        />
-      </div>
-
-      {/* Référence */}
-      <div className="col-span-2">
-        <Input
-          placeholder="Réf. ou NON DISPO"
-          {...register(`chocs.${chocIndex}.fournitures.${fournitureIndex}.reference`)}
-          className="h-9 text-sm"
-        />
-      </div>
-
-      {/* Quantité */}
-      <div className="col-span-2">
-        <Input
-          type="number"
-          min="1"
-          defaultValue="1"
-          {...register(`chocs.${chocIndex}.fournitures.${fournitureIndex}.quantite`)}
-          className="h-9 text-sm"
-        />
-      </div>
-
-      {/* Prix unitaire */}
-      <div className="col-span-3">
-        <Input
-          type="number"
-          placeholder="Prix unitaire"
-          {...register(`chocs.${chocIndex}.fournitures.${fournitureIndex}.prixUnitaire`)}
-          className="h-9 text-sm"
-        />
-      </div>
-
-      {/* Bouton supprimer */}
-      <div className="col-span-1 flex items-center">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onRemove}
-          className="h-9 w-9 p-0 text-red-600 hover:bg-red-50"
-          title="Supprimer cette pièce"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
     </div>
   );
 }
